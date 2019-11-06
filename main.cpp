@@ -41,13 +41,13 @@ class RSABreaker {
 public:
     static unsigned long long int encrypt(unsigned long long message, PublicKey
     publicKey);
-    //Assume
-    // you are only encrypting with public key for now.
+    //Assume you are only encrypting with public key for now.
 
     static unsigned long long int
     decrypt(unsigned long long cipher, PrivateKey privateKey);
 
-    static int crack();
+    static unsigned long long int
+    crack(unsigned long long cipher, PublicKey publicKey);
 };
 
 unsigned long long int
@@ -76,9 +76,27 @@ publicKey) {
     return cipher;
 }
 
-int RSABreaker::crack() {
+unsigned long long int
+RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
+    unsigned int n = publicKey.getN();
+    unsigned int e = publicKey.getE();
+    for (unsigned int m = 0; m <= n - 1; ++m) {
+        unsigned long long possibleCipher = 1;
+
+        //Brute force for a possible cipher.
+        // Instead of doing pow(cipher, e), the loop guards against overflows
+        // by repeatedly taking the modulus with every multiplication.
+        for (unsigned int i = 0; i < e; ++i) {
+            possibleCipher *= m;
+            possibleCipher = possibleCipher % n;
+        }
+        if (possibleCipher == cipher) {
+            return m;
+        }
+    }
     return 0;
 }
+
 
 int phi(int p, int q);
 
@@ -86,7 +104,7 @@ PrivateKey getPrivateKey(int p, int q, unsigned int e);
 
 void test(PublicKey, PrivateKey);
 
-int main() {
+int main(int argc, char *argv[]) {
     int p = 53;
     int q = 59;
     unsigned int n = p * q;
@@ -112,17 +130,24 @@ PrivateKey getPrivateKey(int p, int q, unsigned int e) {
 }
 
 void test(PublicKey publicKey, PrivateKey privateKey) {
-    unsigned int message = 89;
-    std::cout << "Encrypting \"" << message << "\"...\n";
+    unsigned int message = 200;
+    std::cout << "Message: \"" << message << "\"...\n";
     RSABreaker rsaBreaker;
     unsigned long long int cipher = rsaBreaker.encrypt(message, publicKey);
     std::cout << "Encrypted!: " << cipher << "\n";
 
-    std::cout << "Decrypting \"" << cipher << "\"...\n";
+    std::cout << "Decrypting ...\n";
     unsigned long long int decrypted = rsaBreaker.decrypt(cipher, privateKey);
     std::cout << "Decrypted!: " << decrypted << "\n";
 
+    std::cout << "Cracking RSA ... \n";
+    unsigned long long int cracked = rsaBreaker.crack(cipher, publicKey);
+    std::cout << "Cracked!: " << cracked << "\n";
+
     if (message != decrypted) {
         std::cout << "Test failed, please check encryption and decryption";
+    }
+    if (message != cracked) {
+        std::cout << "Test failed, please check cracking algorithm";
     }
 }

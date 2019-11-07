@@ -1,6 +1,8 @@
 #include <iostream>
-#include <cmath>
 
+/**
+ * Holds a public key (consisting of n and e).
+ */
 class PublicKey {
     unsigned int n;
     unsigned int e;
@@ -19,6 +21,11 @@ public:
     }
 };
 
+/**
+ * Holds a private key. Is unused for this implementation, but feel free to
+ * play around with this for encrypting custom messages instead of accepting
+ * a cipher directly from STDIN.
+ */
 class PrivateKey {
     unsigned int d;
     unsigned int n;
@@ -37,6 +44,9 @@ public:
     }
 };
 
+/**
+ * Used to either encrypt or decrypt a message, or to crack a cipher text.
+ */
 class RSABreaker {
 public:
     static unsigned long long int encrypt(unsigned long long message, PublicKey
@@ -76,6 +86,14 @@ publicKey) {
     return cipher;
 }
 
+/**
+ * Brute force all messages 0<=m<=n for finding a message that equals to the
+ * cube root of the cipher text.
+ *
+ * @param cipher the cipher that is to be cracked.
+ * @param publicKey the public key that is assumed to be available to the
+ * hacker.
+ */
 void RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
     unsigned int n = publicKey.getN();
     unsigned int e = publicKey.getE();
@@ -96,8 +114,8 @@ void RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
             cracked = true;
         }
     }
-    if (!cracked){
-        std::cout<<"No cube roots of "<< cipher<<" (mod " <<n<<")";
+    if (!cracked) {
+        std::cout << "No cube roots of " << cipher << " (mod " << n << ")";
     }
 }
 

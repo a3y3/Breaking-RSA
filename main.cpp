@@ -46,8 +46,8 @@ public:
     static unsigned long long int
     decrypt(unsigned long long cipher, PrivateKey privateKey);
 
-    static unsigned long long int
-    crack(unsigned long long cipher, PublicKey publicKey);
+    //void as crack() can find multiple cube roots for a cipher.
+    static void crack(unsigned long long cipher, PublicKey publicKey);
 };
 
 unsigned long long int
@@ -76,10 +76,10 @@ publicKey) {
     return cipher;
 }
 
-unsigned long long int
-RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
+void RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
     unsigned int n = publicKey.getN();
     unsigned int e = publicKey.getE();
+    bool cracked = false;
     for (unsigned int m = 0; m <= n - 1; ++m) {
         unsigned long long possibleCipher = 1;
 
@@ -91,10 +91,14 @@ RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
             possibleCipher = possibleCipher % n;
         }
         if (possibleCipher == cipher) {
-            return m;
+            std::cout << m << "^" << e << " = " << cipher << "(mod " << n
+                      << ")" << std::endl;
+            cracked = true;
         }
     }
-    return 0;
+    if (!cracked){
+        std::cout<<"No cube roots of "<< cipher<<" (mod " <<n<<")";
+    }
 }
 
 
@@ -102,17 +106,15 @@ int phi(int p, int q);
 
 PrivateKey getPrivateKey(int p, int q, unsigned int e);
 
-void test(PublicKey, PrivateKey);
-
 int main(int argc, char *argv[]) {
-    int p = 53;
-    int q = 59;
-    unsigned int n = p * q;
+    unsigned long long int cipher = std::stoi(argv[1]);
+    unsigned int n = std::stoi(argv[2]);
     unsigned int e = 3;
-    PrivateKey privateKey = getPrivateKey(p, q, e);
+//    PrivateKey privateKey = getPrivateKey(p, q, e);
     PublicKey publicKey(n, e);
 
-    test(publicKey, privateKey);
+    RSABreaker rsaBreaker;
+    rsaBreaker.crack(cipher, publicKey);
     return 0;
 }
 
@@ -127,27 +129,4 @@ PrivateKey getPrivateKey(int p, int q, unsigned int e) {
     unsigned int n = p * q;
 
     return {d, n};
-}
-
-void test(PublicKey publicKey, PrivateKey privateKey) {
-    unsigned int message = 200;
-    std::cout << "Message: \"" << message << "\"...\n";
-    RSABreaker rsaBreaker;
-    unsigned long long int cipher = rsaBreaker.encrypt(message, publicKey);
-    std::cout << "Encrypted!: " << cipher << "\n";
-
-    std::cout << "Decrypting ...\n";
-    unsigned long long int decrypted = rsaBreaker.decrypt(cipher, privateKey);
-    std::cout << "Decrypted!: " << decrypted << "\n";
-
-    std::cout << "Cracking RSA ... \n";
-    unsigned long long int cracked = rsaBreaker.crack(cipher, publicKey);
-    std::cout << "Cracked!: " << cracked << "\n";
-
-    if (message != decrypted) {
-        std::cout << "Test failed, please check encryption and decryption";
-    }
-    if (message != cracked) {
-        std::cout << "Test failed, please check cracking algorithm";
-    }
 }

@@ -1,48 +1,6 @@
 #include <iostream>
-
-/**
- * Holds a public key (consisting of n and e).
- */
-class PublicKey {
-    unsigned int n;
-    unsigned int e;
-public:
-    PublicKey(unsigned int n1, unsigned int e1) {
-        n = n1;
-        e = e1;
-    }
-
-    unsigned int getN() const {
-        return n;
-    }
-
-    unsigned int getE() const {
-        return e;
-    }
-};
-
-/**
- * Holds a private key. Is unused for this implementation, but feel free to
- * play around with this for encrypting custom messages instead of accepting
- * a cipher directly from STDIN.
- */
-class PrivateKey {
-    unsigned int d;
-    unsigned int n;
-public:
-    PrivateKey(unsigned int d1, unsigned int n1) {
-        d = d1;
-        n = n1;
-    }
-
-    unsigned int getD() const {
-        return d;
-    }
-
-    unsigned int getN() const {
-        return n;
-    }
-};
+#include "PublicKey.cpp"
+#include "PrivateKey.cpp"
 
 /**
  * Used to either encrypt or decrypt a message, or to crack a cipher text.
@@ -109,7 +67,7 @@ void RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
             possibleCipher = possibleCipher % n;
         }
         if (possibleCipher == cipher) {
-            std::cout << m << "^" << e << " = " << cipher << "(mod " << n
+            std::cout << m << "^" << e << " = " << cipher << " (mod " << n
                       << ")" << std::endl;
             cracked = true;
         }
@@ -128,7 +86,6 @@ int main(int argc, char *argv[]) {
     unsigned long long int cipher = std::stoi(argv[1]);
     unsigned int n = std::stoi(argv[2]);
     unsigned int e = 3;
-//    PrivateKey privateKey = getPrivateKey(p, q, e);
     PublicKey publicKey(n, e);
 
     RSABreaker rsaBreaker;

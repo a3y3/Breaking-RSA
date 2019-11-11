@@ -1,20 +1,25 @@
 #include <iostream>
 #include "PublicKey.cpp"
 #include "PrivateKey.cpp"
+#include <chrono>
 
 /**
  * Used to either encrypt or decrypt a message, or to crack a cipher text.
  */
+int phi(int p, int q);
+
+PrivateKey getPrivateKey(int p, int q, unsigned int e);
+
 class RSABreaker {
 public:
     static unsigned long long int encrypt(unsigned long long message, PublicKey
     publicKey);
-    //Assume you are only encrypting with public key for now.
+//    Assume you are only encrypting with public key for now.
 
     static unsigned long long int
     decrypt(unsigned long long cipher, PrivateKey privateKey);
 
-    //void as crack() can find multiple cube roots for a cipher.
+//    void, as crack() can find multiple cube roots for a cipher.
     static void crack(unsigned long long cipher, PublicKey publicKey);
 };
 
@@ -78,21 +83,6 @@ void RSABreaker::crack(unsigned long long cipher, PublicKey publicKey) {
 }
 
 
-int phi(int p, int q);
-
-PrivateKey getPrivateKey(int p, int q, unsigned int e);
-
-int main(int argc, char *argv[]) {
-    unsigned long long int cipher = std::stoi(argv[1]);
-    unsigned int n = std::stoi(argv[2]);
-    unsigned int e = 3;
-    PublicKey publicKey(n, e);
-
-    RSABreaker rsaBreaker;
-    rsaBreaker.crack(cipher, publicKey);
-    return 0;
-}
-
 int phi(int p, int q) {
     return (p - 1) * (q - 1);
 }
@@ -104,4 +94,21 @@ PrivateKey getPrivateKey(int p, int q, unsigned int e) {
     unsigned int n = p * q;
 
     return {d, n};
+}
+
+int main(int argc, char *argv[]) {
+    unsigned long long int cipher = std::stoi(argv[1]);
+    unsigned int n = std::stoi(argv[2]);
+    unsigned int e = 3;
+    PublicKey publicKey(n, e);
+
+    RSABreaker rsaBreaker;
+    auto start = std::chrono::high_resolution_clock::now();
+    rsaBreaker.crack(cipher, publicKey);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+            stop - start);
+    std::cout << "Execution finished in " << duration.count() <<
+              "ms" << std::endl;
+    return 0;
 }
